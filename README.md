@@ -1,18 +1,44 @@
 # DP2031 Industrial Power Controller
 
-A professional Python application for controlling RIGOL DP2000/DP2031 power supplies with industrial-style GUI interface.
+A professional Python application for controlling RIGOL DP2000/DP2031 power supplies with modern PyQt6 industrial GUI interface.
+
+![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)
+![Python](https://img.shields.io/badge/python-3.13.7-green.svg)
+![PyQt6](https://img.shields.io/badge/PyQt6-6.9.0-orange.svg)
+![Status](https://img.shields.io/badge/status-production--ready-brightgreen.svg)
 
 ## 🎯 Project Overview
 
 This application provides comprehensive control of RIGOL DP2000/DP2031 power supplies featuring:
 
-- **3-Channel Control**: Set/read V-I-P for all channels with precision
-- **Industrial GUI**: Big digits, status lamps, alarms, E-Stop functionality  
-- **Real-time Monitoring**: Live trending of voltage, current, and power
-- **Protection Features**: OVP/OCP controls with alarm management
-- **Advanced Modes**: Series/parallel/tracking, remote sense, low-current sampling
-- **Data Logging**: CSV logging with configurable intervals
-- **Auto-recovery**: Automatic connection recovery and error handling
+- **Modern PyQt6 GUI**: Industrial design with professional appearance
+- **Enhanced Connect Action**: Direct connection to last resource (1-click reconnection)
+- **Theme System**: Light/Dark themes with complete consistency
+- **3-Channel Control**: Precision voltage/current/power control
+- **Real-time Monitoring**: Live data visualization and trending
+- **Professional Layout**: Status dock with always-visible monitoring controls
+- **EMERGENCY STOP**: Right-positioned with proper red styling
+- **Data Logging**: Comprehensive CSV logging with timestamps
+
+## 🚀 Latest Features (v1.0.0)
+
+### 🔗 Enhanced Connect Action
+- **Direct Connection**: Automatically connects to last successful resource
+- **Smart Fallback**: Shows Connection Dialog for first-time use
+- **1-Click Reconnection**: Reduced from 3+ clicks to single click
+- **Settings Persistence**: Remembers last resource across app restarts
+
+### 🎨 Complete Theme Integration
+- **Fixed Theme Issues**: TabWidget, Menu, Toolbar now fully themed
+- **Light/Dark Themes**: Professional color schemes
+- **Industrial Styling**: Specialized widgets for power supply control
+- **Consistent Appearance**: All UI elements follow theme
+
+### 🏗️ Professional UI Layout
+- **Status Dock Reorganization**: Monitoring controls always visible
+- **Tab Prioritization**: Channel Status shown first
+- **EMERGENCY STOP**: Professional right positioning with red text
+- **Toolbar Enhancement**: Connect action and emergency controls
 
 ## 🚀 Features
 
@@ -33,74 +59,57 @@ This application provides comprehensive control of RIGOL DP2000/DP2031 power sup
 
 ## 📋 System Requirements
 
-- **Python**: 3.11+ (Recommended: 3.13.7)
+- **Python**: 3.11+ (Tested on 3.13.7)
 - **Operating System**: Windows 10+ (Primary), Linux/macOS compatible
 - **Hardware**: RIGOL DP2000/DP2031 Power Supply
 - **Connection**: USB, LAN (VXI-11), RS-232, or GPIB interface
+- **Dependencies**: See requirements.txt for complete list
 
 ## 🛠️ Technology Stack
 
-- **GUI Framework**: PyQt6 for modern industrial interface
-- **Communication**: PyVISA with NI/Keysight backend
-- **Real-time Plotting**: pyqtgraph for high-performance displays
-- **Scientific Computing**: NumPy for data processing
-- **Configuration**: python-dotenv for environment management
+- **GUI Framework**: PyQt6 6.9.0 for modern industrial interface
+- **Communication**: PyVISA 1.15.0 with NI/Keysight backend
+- **Real-time Plotting**: pyqtgraph 0.13.7 for high-performance displays
+- **Scientific Computing**: NumPy 1.26.4 for data processing
+- **Theme System**: Custom reusable theme manager
 - **Testing**: pytest for comprehensive testing
-- **Logging**: Python logging for system monitoring
+- **Version Control**: Git with professional workflow
+- **Logging**: Industrial-grade logging system
 
 ## 🎯 Quick Start
 
-### Option 1: Simple Main Entry (NEW - Recommended)
+### Recommended Method (NEW)
 ```bash
-# 1. Setup virtual environment and dependencies
+# 1. Clone repository
+git clone <repository-url>
+cd DP2031
+
+# 2. Setup virtual environment and dependencies  
 setup_venv.bat
 
-# 2. Run application using main.py
+# 3. Run application using main.py
 python main.py
 
 # Or use batch script
 run_main.bat
 ```
 
-### Option 2: Debug Mode (NEW)
+### Module Execution
+```bash
+# Direct module execution
+python -m dp2031_gui
+
+# Or use existing batch script
+run_dp2031.bat
+```
+
+### Development Mode
 ```bash
 # For development and troubleshooting
 python debug.py
 
-# Or use batch script
-run_debug_main.bat
-```
-
-### Option 3: Quick Run (NEW)
-```bash
-# Minimal logging for quick testing
-python quick_run.py
-
-# Silent mode (errors only)
-python quick_run.py --silent
-```
-
-### Option 4: Traditional Method
-```bash
-# Direct module execution
-python -m dp2031_gui.app
-
-# Or existing batch scripts
-run_app.bat
+# Or use batch script for debugging
 run_debug.bat
-```
-
-### Option 5: Manual Setup
-```bash
-# 1. Create virtual environment
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Run application
-python main.py
 ```
 
 ## 📂 Project Structure
