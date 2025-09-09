@@ -1,0 +1,2 @@
+# Requirements for Reusable Theme System
+PyQt6>=6.0.0

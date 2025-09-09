@@ -1,0 +1,45 @@
+# DP2031 Industrial Power Controller
+# Complete Requirements File for Production Deployment
+# Supports Python 3.11+ on Windows, Linux, macOS
+
+# Core GUI Framework
+PyQt6>=6.4.0,<7.0.0
+
+# Scientific Computing and Data Processing
+numpy>=1.21.0,<3.0.0
+
+# Real-time Plotting and Visualization  
+pyqtgraph>=0.13.0,<1.0.0
+
+# VISA Communication
+pyvisa>=1.13.0,<2.0.0
+
+# Configuration Management
+python-dotenv>=1.0.0,<2.0.0
+
+# Testing Framework
+pytest>=7.0.0,<9.0.0
+pytest-qt>=4.0.0,<5.0.0
+pytest-cov>=4.0.0,<5.0.0
+pytest-mock>=3.0.0,<4.0.0
+
+# Optional: Enhanced Features
+# matplotlib>=3.5.0,<4.0.0       # Additional plotting capabilities
+# h5py>=3.6.0,<4.0.0            # HDF5 data storage for large datasets
+# pandas>=1.4.0,<3.0.0          # Data analysis and CSV handling
+
+# Development Tools (Optional)
+# black>=22.0.0                   # Code formatting
+# flake8>=4.0.0                   # Code linting
+# mypy>=0.950                     # Type checking
+# sphinx>=4.5.0                   # Documentation generation
+
+# VISA Backends (Choose one based on your system)
+# NI-VISA Runtime required for pyvisa-py alternative:
+# pyvisa-py>=0.7.0               # Pure Python VISA backend (experimental)
+
+# Notes:
+# - NI-VISA Runtime or Keysight IO Libraries Suite required for hardware communication
+# - For USB connections: Install appropriate USB drivers
+# - For LAN connections: Ensure VXI-11 protocol support
+# - For RS-232: Configure serial port settings in system
