@@ -38,7 +38,14 @@ LIGHT_THEME_COLORS = {
     'status_info': '#0d6efd',
     'status_success': '#198754',
     'status_warning': '#fd7e14',
-    'status_error': '#dc3545'
+    'status_error': '#dc3545',
+    
+    # Industrial LCD Display colors
+    'lcd_background': '#1a1a1a',      # Dark background
+    'lcd_border': '#ffffff',          # White border
+    'lcd_digit_color': '#00ff41',     # Bright green digits
+    'lcd_label_color': '#e0e0e0',     # Light gray labels
+    'lcd_unit_color': '#cccccc'       # Medium gray units
 }
 
 # Dark Theme Color Scheme  
@@ -74,7 +81,14 @@ DARK_THEME_COLORS = {
     'status_info': '#58a6ff',
     'status_success': '#7c3aed',
     'status_warning': '#ffa657',
-    'status_error': '#f85149'
+    'status_error': '#f85149',
+    
+    # Industrial LCD Display colors
+    'lcd_background': '#0a0a0a',      # Very dark background
+    'lcd_border': '#4a90e2',          # Blue border
+    'lcd_digit_color': '#00ccff',     # Cyan digits
+    'lcd_label_color': '#ffffff',     # White labels
+    'lcd_unit_color': '#cccccc'       # Light gray units
 }
 
 # Compact Desktop Sizing for Better Space Utilization

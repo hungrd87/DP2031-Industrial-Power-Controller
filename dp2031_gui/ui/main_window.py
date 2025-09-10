@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QDockWidget, QTabWidget, QSplitter, QStatusBar, QMenuBar,
     QMenu, QToolBar, QLabel, QPushButton, QGroupBox, QFrame,
     QApplication, QMessageBox, QDialog, QTextEdit, QProgressBar,
-    QSizePolicy
+    QSizePolicy, QLCDNumber
 )
 from PyQt6.QtCore import (
     Qt, QTimer, QThread, pyqtSignal, QSettings, QSize, QPoint
@@ -37,14 +37,14 @@ from .widgets import (
 # Import reusable theme system
 try:
     # Try direct import first
-    from reusable_theme_system.theme_manager import ThemeManager, get_theme_stylesheet
+    from reusable_theme_system.theme_manager import ThemeManager, get_theme_stylesheet, get_industrial_lcd_stylesheet
 except ImportError:
     # Fallback to path modification
     import sys
     import os
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     sys.path.insert(0, os.path.join(project_root, 'reusable_theme_system'))
-    from theme_manager import ThemeManager, get_theme_stylesheet
+    from theme_manager import ThemeManager, get_theme_stylesheet, get_industrial_lcd_stylesheet
 
 
 class MainWindow(QMainWindow):
@@ -74,8 +74,18 @@ class MainWindow(QMainWindow):
         self.settings = QSettings('RIGOL', 'DP2031_Controller')
         self.last_resource = None  # Store last connected resource
         
-        # Theme manager
+        # Theme manager - Load theme first before creating UI
         self.theme_manager = ThemeManager()
+        self.current_theme = "dark"  # Default theme (will be overridden by _load_theme)
+        
+        # Load theme before creating any widgets
+        self._load_theme()
+        
+        # Track LCD widgets for theme updates
+        self.lcd_widgets = []
+        
+        # Track LCD label widgets for theme updates  
+        self.lcd_label_widgets = []
         
         # UI components
         self.dock_widgets: Dict[str, QDockWidget] = {}
@@ -98,9 +108,6 @@ class MainWindow(QMainWindow):
         # Connect signals
         self.connection_status_changed.connect(self._update_connect_action)
         
-        # Load and apply theme
-        self._load_theme()
-        
         # Industrial styling is now handled by the theme manager
         
         self.logger.info("Main window initialization completed")
@@ -108,7 +115,7 @@ class MainWindow(QMainWindow):
     def _setup_ui(self):
         """Setup main window properties and central widget."""
         self.setWindowTitle("DP2031 Industrial Power Controller")
-        self.setMinimumSize(800, 450)  # Further reduced minimum height to 450px
+        self.setMinimumSize(600, 400)  # Further reduced minimum height to 450px
         self.resize(1000, 500)  # Reduced default height to 500px
 
         # Set window icon (if available)
@@ -200,8 +207,8 @@ class MainWindow(QMainWindow):
         overview_layout.addWidget(self.connection_lamp, 0, 3)
         
         # Total power display
-        self.total_power_display = BigDigitDisplay("Total Power", "W", precision=2)
-        overview_layout.addWidget(self.total_power_display, 1, 0, 2, 2)
+        self.total_power_display = self._create_lcd_display("Total Power", "W", precision=2)
+        overview_layout.addWidget(self.total_power_display['container'], 1, 0, 2, 2)
         
         # System status indicators
         status_frame = QFrame()
@@ -222,6 +229,66 @@ class MainWindow(QMainWindow):
         # Add overview layout to main layout
         layout.addLayout(overview_layout)
         layout.addStretch()  # Push content to top
+    
+    def _create_lcd_display(self, label: str, unit: str, precision: int = 3, compact: bool = False) -> dict:
+        """Create LCD display widget with label and unit."""
+        container = QWidget()
+        container.setObjectName("lcd_container")  # For styling
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(2, 2, 2, 2)
+        layout.setSpacing(2)
+        
+        # Label
+        if label:
+            label_widget = QLabel(label)
+            label_widget.setObjectName("lcd_label")  # For styling
+            font = QFont("Arial", 8 if compact else 10, QFont.Weight.Bold)
+            label_widget.setFont(font)
+            label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(label_widget)
+            
+            # Track label widget for theme updates
+            self.lcd_label_widgets.append(label_widget)
+        
+        # LCD Display with industrial styling
+        lcd = QLCDNumber(6)  # 6 digits for xxx.xxx format
+        lcd.setMode(QLCDNumber.Mode.Dec)
+        lcd.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
+        height = 40 if compact else 60
+        lcd.setMinimumHeight(height)
+        lcd.setMaximumHeight(height)
+        
+        # Apply industrial LCD stylesheet
+        current_theme = getattr(self, 'current_theme', 'dark')
+        lcd_style = get_industrial_lcd_stylesheet(current_theme)
+        lcd.setStyleSheet(lcd_style)
+        
+        # Track this LCD widget for theme updates
+        self.lcd_widgets.append(lcd)
+        
+        layout.addWidget(lcd)
+        
+        # Unit
+        if unit:
+            unit_widget = QLabel(unit)
+            unit_widget.setObjectName("lcd_unit")  # For styling
+            font = QFont("Arial", 8 if compact else 10, QFont.Weight.Bold)
+            unit_widget.setFont(font)
+            unit_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(unit_widget)
+            
+            # Track unit widget for theme updates
+            self.lcd_label_widgets.append(unit_widget)
+        
+        # Apply container styling
+        container.setStyleSheet(lcd_style)
+        
+        return {
+            'container': container,
+            'lcd': lcd,
+            'precision': precision,
+            'set_value': lambda value: lcd.display(f"{value:.{precision}f}")
+        }
     
     def _create_quick_status_panel_content(self, parent_widget: QWidget):
         """Create quick status panel content for tab."""
@@ -244,15 +311,15 @@ class MainWindow(QMainWindow):
             channel_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
             channel_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             channel_layout.addWidget(channel_label)
+
+            # LCD displays
+            voltage_display = self._create_lcd_display("V", "", precision=3, compact=True)
+            current_display = self._create_lcd_display("A", "", precision=3, compact=True)
+            power_display = self._create_lcd_display("W", "", precision=2, compact=True)
             
-            # Mini displays
-            voltage_display = BigDigitDisplay("V", "", precision=3, compact=True)
-            current_display = BigDigitDisplay("A", "", precision=3, compact=True)
-            power_display = BigDigitDisplay("W", "", precision=2, compact=True)
-            
-            channel_layout.addWidget(voltage_display)
-            channel_layout.addWidget(current_display)
-            channel_layout.addWidget(power_display)
+            channel_layout.addWidget(voltage_display['container'])
+            channel_layout.addWidget(current_display['container'])
+            channel_layout.addWidget(power_display['container'])
             
             # Output status lamp
             output_lamp = StatusLamp("Output")
@@ -485,20 +552,22 @@ class MainWindow(QMainWindow):
         theme_group = QActionGroup(self)
         
         # Dark theme action
-        dark_action = QAction("&Dark Theme", self)
-        dark_action.setCheckable(True)
-        dark_action.setChecked(self.theme_manager.current_theme == "dark")
-        dark_action.triggered.connect(lambda: self._set_theme("dark"))
-        theme_group.addAction(dark_action)
-        theme_menu.addAction(dark_action)
+        self.dark_action = QAction("🌙 Dark", self)
+        self.dark_action.setToolTip("Switch to dark theme")
+        self.dark_action.setCheckable(True)
+        self.dark_action.setChecked(self.theme_manager.current_theme == "dark")
+        self.dark_action.triggered.connect(lambda: self._set_theme("dark"))
+        theme_group.addAction(self.dark_action)
+        theme_menu.addAction(self.dark_action)
         
         # Light theme action
-        light_action = QAction("&Light Theme", self)
-        light_action.setCheckable(True)
-        light_action.setChecked(self.theme_manager.current_theme == "light")
-        light_action.triggered.connect(lambda: self._set_theme("light"))
-        theme_group.addAction(light_action)
-        theme_menu.addAction(light_action)
+        self.light_action = QAction("☀️ Light", self)
+        self.light_action.setToolTip("Switch to light theme")
+        self.light_action.setCheckable(True)
+        self.light_action.setChecked(self.theme_manager.current_theme == "light")
+        self.light_action.triggered.connect(lambda: self._set_theme("light"))
+        theme_group.addAction(self.light_action)
+        theme_menu.addAction(self.light_action)
         
         view_menu.addSeparator()
         
@@ -561,6 +630,12 @@ class MainWindow(QMainWindow):
         self.connect_action.setCheckable(True)
         self.connect_action.triggered.connect(self._toggle_connection)
         toolbar.addAction(self.connect_action)
+        
+        toolbar.addSeparator()
+        
+        # Theme switcher buttons in toolbar
+        toolbar.addAction(self.dark_action)
+        toolbar.addAction(self.light_action)
         
         toolbar.addSeparator()
         
@@ -835,9 +910,9 @@ class MainWindow(QMainWindow):
                 # Update quick status displays
                 if channel in self.quick_status_widgets:
                     widgets = self.quick_status_widgets[channel]
-                    widgets['voltage'].set_value(measurement.voltage)
-                    widgets['current'].set_value(measurement.current)
-                    widgets['power'].set_value(measurement.power)
+                    widgets['voltage']['set_value'](measurement.voltage)
+                    widgets['current']['set_value'](measurement.current)
+                    widgets['power']['set_value'](measurement.power)
                 
                 # Emit signal
                 self.measurement_updated.emit(channel, measurement)
@@ -845,7 +920,7 @@ class MainWindow(QMainWindow):
                 total_power += measurement.power
             
             # Update total power display
-            self.total_power_display.set_value(total_power)
+            self.total_power_display['set_value'](total_power)
             
             # Update measurement rate display
             rate = 1000 // self.measurement_timer.interval() if self.measurement_timer.interval() > 0 else 0
@@ -1087,6 +1162,9 @@ class MainWindow(QMainWindow):
     def _set_theme(self, theme_name: str):
         """Set application theme using reusable theme system."""
         try:
+            # Update current theme for LCD styling
+            self.current_theme = theme_name
+            
             # Set theme in manager
             self.theme_manager.set_theme(theme_name)
             
@@ -1095,6 +1173,13 @@ class MainWindow(QMainWindow):
             if app:
                 stylesheet = get_theme_stylesheet(theme_name)
                 app.setStyleSheet(stylesheet)
+            
+            # Update all LCD widgets with new theme
+            self._update_lcd_themes()
+            
+            # Update theme action checked states
+            self.dark_action.setChecked(theme_name == "dark")
+            self.light_action.setChecked(theme_name == "light")
             
             self.logger.info(f"Theme changed to: {theme_name}")
             
@@ -1106,11 +1191,43 @@ class MainWindow(QMainWindow):
             self.logger.error(f"Failed to set theme {theme_name}: {e}")
             QMessageBox.warning(self, "Theme Error", f"Failed to apply {theme_name} theme: {e}")
     
+    def _update_lcd_themes(self):
+        """Update all LCD widgets with current theme."""
+        try:
+            lcd_style = get_industrial_lcd_stylesheet(self.current_theme)
+            updated_count = 0
+            for lcd_widget in self.lcd_widgets:
+                if lcd_widget and not lcd_widget.isHidden():
+                    lcd_widget.setStyleSheet(lcd_style)
+                    updated_count += 1
+                    
+            # Update LCD labels with theme-appropriate colors
+            label_updated_count = 0
+            label_color = "#f0f6fc" if self.current_theme == "dark" else "#24292f"
+            for label_widget in self.lcd_label_widgets:
+                if label_widget and not label_widget.isHidden():
+                    label_widget.setStyleSheet(f"""
+                        QLabel {{
+                            color: {label_color};
+                            font-weight: bold;
+                            background-color: transparent;
+                            border: none;
+                        }}
+                    """)
+                    label_updated_count += 1
+                    
+            self.logger.info(f"Updated {updated_count}/{len(self.lcd_widgets)} LCD widgets and {label_updated_count}/{len(self.lcd_label_widgets)} labels with {self.current_theme} theme")
+        except Exception as e:
+            self.logger.error(f"Failed to update LCD themes: {e}")
+    
     def _load_theme(self):
         """Load theme from settings using reusable theme system."""
         try:
             settings = QSettings()
-            saved_theme = settings.value("theme", "dark")  # Default to dark
+            saved_theme = settings.value("theme", "dark")  # Default to dark (consistent with initial setting)
+            
+            # Update current theme for LCD styling
+            self.current_theme = saved_theme
             
             # Set theme in manager
             self.theme_manager.set_theme(saved_theme)
@@ -1125,6 +1242,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.logger.warning(f"Failed to load theme, using default: {e}")
             # Fallback to dark theme
+            self.current_theme = "dark"
             self.theme_manager.set_theme("dark")
             app = QApplication.instance()
             if app:

@@ -499,19 +499,14 @@ class ChannelControlWidget(QWidget):
         layout.setContentsMargins(2, 2, 2, 2)  # Further reduced margins
         layout.setSpacing(2)  # Further reduced spacing
         
-        # Output control group - compact
-        output_group = QGroupBox("Output")
-        output_group.setStyleSheet("QGroupBox { font-size: 11px; }")  # Increased font (+1px)
-        output_layout = QVBoxLayout(output_group)
-        output_layout.setContentsMargins(2, 2, 2, 2)  # Minimal margins
-        output_layout.setSpacing(1)  # Minimal spacing
+        # Output button - centered, no group
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()  # Left stretch
         
-        # Output enable button - smaller
         self.output_btn = QPushButton("OFF")
         self.output_btn.setCheckable(True)
         self.output_btn.clicked.connect(self._toggle_output)
-        self.output_btn.setMinimumHeight(28)  # Increased height for better usability
-        self.output_btn.setMaximumHeight(28)
+        # Width constraints: min=160px, max=free
         self.output_btn.setStyleSheet("""
             QPushButton {
                 background-color: #666666;
@@ -520,6 +515,8 @@ class ChannelControlWidget(QWidget):
                 font-size: 12px;
                 border: 1px solid #888888;
                 border-radius: 4px;
+                min-width: 160px;
+                min-height: 28px;
             }
             QPushButton:checked {
                 background-color: #00aa00;
@@ -529,15 +526,17 @@ class ChannelControlWidget(QWidget):
                 border-color: #aaaaaa;
             }
         """)
-        output_layout.addWidget(self.output_btn)
         
-        layout.addWidget(output_group)
+        button_layout.addWidget(self.output_btn)
+        button_layout.addStretch()  # Right stretch
+        
+        layout.addLayout(button_layout)
         
         # Setpoint group - compact layout with proper margins
         setpoint_group = QGroupBox("Setpoints")
         setpoint_group.setStyleSheet("QGroupBox { font-size: 10px; }")  # Increased font (+1px)
         setpoint_layout = QFormLayout(setpoint_group)
-        setpoint_layout.setContentsMargins(4, 8, 4, 2)  # Reduced top/bottom margins
+        setpoint_layout.setContentsMargins(4, 4, 4, 2)  # Reduced top/bottom margins
         setpoint_layout.setVerticalSpacing(2)             # Minimal vertical spacing
         setpoint_layout.setHorizontalSpacing(3)           # Minimal horizontal spacing
         
@@ -577,7 +576,7 @@ class ChannelControlWidget(QWidget):
         protection_group = QGroupBox("Protection")
         protection_group.setStyleSheet("QGroupBox { font-size: 10px; }")  # Increased font (+1px)
         protection_layout = QGridLayout(protection_group)  # Changed to grid for compactness
-        protection_layout.setContentsMargins(4, 8, 4, 2)  # Reduced margins
+        protection_layout.setContentsMargins(4, 4, 4, 2)  # Reduced margins
         protection_layout.setHorizontalSpacing(3)  # Minimal horizontal spacing
         protection_layout.setVerticalSpacing(2)    # Minimal vertical spacing
         
@@ -616,6 +615,7 @@ class ChannelControlWidget(QWidget):
         protection_layout.addWidget(self.ocp_level_spin, 1, 1)
         
         layout.addWidget(protection_group)
+        layout.addStretch()  # Push content to top
     
     def _toggle_output(self):
         """Toggle output state."""

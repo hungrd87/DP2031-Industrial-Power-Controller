@@ -51,6 +51,82 @@ class ThemeManager:
         else:
             raise ValueError(f"Theme '{theme_name}' not found")
 
+def get_industrial_lcd_stylesheet(theme_name: str = "dark") -> str:
+    """
+    Get industrial-style CSS for QLCDNumber widgets.
+    
+    Args:
+        theme_name: Theme name to get colors from
+        
+    Returns:
+        CSS stylesheet for industrial LCD appearance
+    """
+    manager = ThemeManager()
+    colors = manager.get_theme_colors(theme_name)
+    
+    if theme_name.lower() == "light":
+        # Light theme LCD colors
+        bg_color = colors.get('lcd_background', '#1a1a1a')
+        border_color = colors.get('border_light', '#e9ecef')  # Use border_light for better visibility
+        digit_color = colors.get('lcd_digit_color', '#00ff41')
+        label_color = colors.get('text_primary', '#495057')
+        unit_color = colors.get('text_secondary', '#6c757d')
+    else:
+        # Dark theme LCD colors
+        bg_color = colors.get('lcd_background', '#0a0a0a')
+        border_color = colors.get('border_light', '#30363d')  # Use border_light for better visibility
+        digit_color = colors.get('lcd_digit_color', '#00ccff')
+        label_color = colors.get('lcd_label_color', '#ffffff')
+        unit_color = colors.get('lcd_unit_color', '#cccccc')
+    
+    return f"""
+    /* Industrial LCD Number Style */
+    QLCDNumber {{
+        background-color: {bg_color};
+        border: 2px solid {border_color};
+        border-radius: 6px;
+        color: {digit_color};
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: bold;
+        padding: 4px;
+        margin: 2px;
+    }}
+    
+    /* LCD Container Labels */
+    QWidget[objectName*="lcd"] QLabel {{
+        color: {label_color};
+        font-weight: bold;
+        background-color: transparent;
+        border: none;
+        padding: 2px;
+    }}
+    
+    /* LCD Unit Labels */
+    QLabel[objectName*="unit"] {{
+        color: {unit_color};
+        font-weight: bold;
+        font-size: 10px;
+        background-color: transparent;
+        border: none;
+        padding: 1px;
+    }}
+    
+    /* LCD Label specific styling */
+    QLabel[objectName*="label"] {{
+        color: {label_color};
+        font-weight: bold;
+        font-size: 10px;
+        background-color: transparent;
+        border: none;
+        padding: 1px;
+    }}
+    
+    /* Hover effects for LCD container */
+    QWidget:hover QLCDNumber {{
+        border-color: {digit_color};
+    }}
+    """
+
 def get_theme_stylesheet(theme_name: str = "light") -> str:
     """
     Get complete CSS stylesheet for specified theme.
